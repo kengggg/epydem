@@ -7,4 +7,4 @@
 You can install the library using pip:
 
 ```bash
-pip install git+https://github.com/yourusername/epydem.git
+pip install git+https://github.com/kengggg/epydem.git
