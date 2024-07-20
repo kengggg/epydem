@@ -1,2 +1,10 @@
-# epydem
-A Python tool for epidemiology data analysis
+# Epydem
+
+`Epydem` is a Python library for epidemiological data analysis.
+
+## Installation
+
+You can install the library using pip:
+
+```bash
+pip install git+https://github.com/yourusername/epydem.git
