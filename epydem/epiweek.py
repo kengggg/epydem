@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
-def calculate_epi_week(date_str):
+def calcuate(date_str):
   if _verify_date_str(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
     year = date.year
