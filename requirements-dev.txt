@@ -6,6 +6,7 @@ pytest-cov>=2.10.0
 # Code formatting and linting
 black>=22.0.0
 flake8>=4.0.0
+isort>=5.0.0
 
 # Build tools
 build>=0.8.0
