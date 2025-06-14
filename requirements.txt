@@ -1,0 +1,2 @@
+# Production dependencies for epydem
+# This library has no external dependencies - uses only Python standard library
