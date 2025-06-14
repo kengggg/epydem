@@ -13,7 +13,7 @@ def calculate(date_str):
     date_str (str): The date in 'YYYY-MM-DD' format.
 
   Returns:
-    int: The epidemiological week number. Returns 0 if the date is
+    int: The epidemiological week number (1-53). Returns 0 if the date is
     before the start of the epidemiological year.
 
   Raises:
@@ -23,14 +23,19 @@ def calculate(date_str):
     date = datetime.strptime(date_str, '%Y-%m-%d')
     year = date.year
 
-    year_start = datetime(year, 1, 1)
-    week_start = year_start - timedelta(days=year_start.weekday() + 1)
+    # Find the first Thursday of the year
+    jan_1 = datetime(year, 1, 1)
+    days_to_thursday = (3 - jan_1.weekday()) % 7
+    first_thursday = jan_1 + timedelta(days=days_to_thursday)
+    
+    # The epidemiological week 1 starts on the Sunday before the first Thursday
+    epi_week_1_start = first_thursday - timedelta(days=3)
 
     # If the date is before the start of the epidemiological year, it's week 0
-    if date < week_start:
+    if date < epi_week_1_start:
       return 0
     else:
-      return (date - week_start).days // 7
+      return ((date - epi_week_1_start).days // 7) + 1
 
 def _verify_date_str(date_str):
   """
