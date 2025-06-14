@@ -37,6 +37,7 @@ def calculate(date_str):
         else:
             return ((date - epi_week_1_start).days // 7) + 1
 
+
 def _verify_date_str(date_str):
     """
     Verify that the date string is in the 'YYYY-MM-DD' format.
