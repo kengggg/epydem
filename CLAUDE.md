@@ -34,9 +34,9 @@ The library follows a simple, focused architecture:
 ## Key Implementation Details
 
 - **Date Format**: Strictly enforces YYYY-MM-DD format using regex validation
-- **Epidemiological Week Logic**: Week 1 starts on the Sunday before the first Thursday of the year
+- **Epidemiological Week Logic**: First epi week starts on Sunday and includes the first Thursday of the year
 - **Error Handling**: Raises ValueError with descriptive messages for invalid date formats
-- **Return Values**: Returns week numbers 1-53, or 0 for dates before the start of the epidemiological year
+- **Return Values**: Returns 0 for dates before the start of the epidemiological year
 
 ## Code Conventions
 
