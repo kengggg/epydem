@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
+
 def calculate(date_str):
     """
     Calculate the epidemiological week number for a given date string.
