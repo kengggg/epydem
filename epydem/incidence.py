@@ -67,15 +67,26 @@ def incidence(
         group_cols = by_cols + ["date"]
         long = work.groupby(group_cols, dropna=False).size().rename(count_col).reset_index()
 
-        if fill_missing and by_cols == []:
-            # Fill missing calendar dates for the overall series.
+        if fill_missing:
             all_dates = pd.date_range(long["date"].min(), long["date"].max(), freq="D").date
-            long = (
-                long.set_index("date")
-                .reindex(all_dates, fill_value=0)
-                .rename_axis("date")
-                .reset_index()
-            )
+
+            if not by_cols:
+                long = (
+                    long.set_index("date")
+                    .reindex(all_dates, fill_value=0)
+                    .rename_axis("date")
+                    .reset_index()
+                )
+            else:
+                # Fill missing dates per stratum combination.
+                strata = long[by_cols].drop_duplicates()
+                strata["_k"] = 1
+                full_dates = pd.DataFrame({"date": list(all_dates)})
+                full_dates["_k"] = 1
+                full = strata.merge(full_dates, on="_k", how="outer").drop(columns=["_k"])
+
+                long = full.merge(long, on=by_cols + ["date"], how="left")
+                long[count_col] = long[count_col].fillna(0).astype(int)
 
         if output == "long":
             return long
@@ -106,15 +117,13 @@ def incidence(
         group_cols = by_cols + ["epi_year", "epi_week"]
         long = work.groupby(group_cols, dropna=False).size().rename(count_col).reset_index()
 
-        if fill_missing and by_cols == []:
+        if fill_missing:
             # Fill missing epiweeks between min and max observed.
             long = long.sort_values(["epi_year", "epi_week"]).reset_index(drop=True)
             start_y, start_w = int(long.iloc[0]["epi_year"]), int(long.iloc[0]["epi_week"])
             end_y, end_w = int(long.iloc[-1]["epi_year"]), int(long.iloc[-1]["epi_week"])
 
             # Build the full sequence of (y,w) by stepping Sundays.
-            # We use the canonical week start for MMWR year/week computed via epiweek.
-            # (Implementation detail: step 7 days from the first observed week start.)
             from .time import mmwr_week1_start
             from datetime import timedelta
 
@@ -128,11 +137,23 @@ def incidence(
                 d += timedelta(days=7)
 
             idx = pd.MultiIndex.from_tuples(full_pairs, names=["epi_year", "epi_week"])
-            long = (
-                long.set_index(["epi_year", "epi_week"])
-                .reindex(idx, fill_value=0)
-                .reset_index()
-            )
+
+            if not by_cols:
+                long = (
+                    long.set_index(["epi_year", "epi_week"])
+                    .reindex(idx, fill_value=0)
+                    .reset_index()
+                )
+            else:
+                # Fill missing epiweeks per stratum combination.
+                strata = long[by_cols].drop_duplicates()
+                strata["_k"] = 1
+                full_time = idx.to_frame(index=False)
+                full_time["_k"] = 1
+                full = strata.merge(full_time, on="_k", how="outer").drop(columns=["_k"])
+
+                long = full.merge(long, on=by_cols + ["epi_year", "epi_week"], how="left")
+                long[count_col] = long[count_col].fillna(0).astype(int)
 
         if output == "long":
             return long
