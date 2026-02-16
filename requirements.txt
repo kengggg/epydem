@@ -1,2 +1,4 @@
 # Production dependencies for epydem
-# This library has no external dependencies - uses only Python standard library
+# Prefer installing via pyproject.toml (pip install .)
+numpy>=1.24
+pandas>=2.0
