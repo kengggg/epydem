@@ -30,10 +30,14 @@ print(year, week)
 
 week_only = epydem.epiweek_number("2024-01-01")
 print(week_only)
+
+# Incidence (line list -> counts)
+# df = pandas.DataFrame({"onset_date": [...], "sex": [...]})
+# weekly = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["sex"])
 ```
 
 ## Roadmap (high level)
 
 - CDC/MMWR epiweek (week starts Sunday; week 1 contains Jan 4) ✅ (in progress)
-- Incidence / epicurves from line lists (pandas)
+- Incidence / epicurves from line lists (pandas) ✅ (in progress)
 - Summary statistics (descriptive epi)
