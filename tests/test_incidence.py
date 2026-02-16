@@ -38,7 +38,13 @@ def test_incidence_weekly_mmwr_with_strata_fills_missing():
         }
     )
 
-    out = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["province"], fill_missing=True)
+    out = epydem.incidence(
+        df,
+        date_col="onset_date",
+        freq="W-MMWR",
+        by=["province"],
+        fill_missing=True,
+    )
 
     # Both strata should have rows for both weeks.
     assert out.loc[(2024, 1), "A"] == 1

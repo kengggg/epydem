@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, timedelta
-from typing import Literal, Tuple, Union
+from typing import Literal
 
-DateLike = Union[str, date, datetime]
+DateLike = str | date | datetime
 EpiWeekSystem = Literal["mmwr"]
 
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -47,7 +47,7 @@ def mmwr_week1_start(year: int) -> date:
     return jan4 - timedelta(days=days_since_sunday)
 
 
-def mmwr_week(value: DateLike) -> Tuple[int, int]:
+def mmwr_week(value: DateLike) -> tuple[int, int]:
     """Compute CDC/MMWR epidemiological week for a date.
 
     Returns:
@@ -73,7 +73,7 @@ def mmwr_week(value: DateLike) -> Tuple[int, int]:
     return mmwr_year, week
 
 
-def epiweek(value: DateLike, system: EpiWeekSystem = "mmwr") -> Tuple[int, int]:
+def epiweek(value: DateLike, system: EpiWeekSystem = "mmwr") -> tuple[int, int]:
     """Compute epidemiological week.
 
     Currently supported systems:
