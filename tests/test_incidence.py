@@ -18,12 +18,11 @@ def test_incidence_daily_basic():
     )
 
     out = epydem.incidence(df, date_col="onset_date", freq="D")
-    assert set(out.columns) == {"date", "cases"}
+    # default output is wide
+    assert list(out.columns) == ["cases"]
 
-    # Two cases on 2024-01-01, one on 2024-01-02
-    m = {row["date"]: row["cases"] for _, row in out.iterrows()}
-    assert m[pd.to_datetime("2024-01-01").date()] == 2
-    assert m[pd.to_datetime("2024-01-02").date()] == 1
+    assert out.loc[pd.to_datetime("2024-01-01").date(), "cases"] == 2
+    assert out.loc[pd.to_datetime("2024-01-02").date(), "cases"] == 1
 
 
 def test_incidence_weekly_mmwr_with_strata():
@@ -40,15 +39,11 @@ def test_incidence_weekly_mmwr_with_strata():
     )
 
     out = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["province"])
-    assert set(out.columns) == {"province", "epi_year", "epi_week", "cases"}
 
-    # Should have 2 rows: (2021,52)=2 cases, (2022,1)=1 case
-    out_sorted = out.sort_values(["epi_year", "epi_week"]).reset_index(drop=True)
+    # Wide format: index=(epi_year, epi_week), column(s)=province
+    assert out.loc[(2021, 52), "A"] == 2
+    assert out.loc[(2022, 1), "A"] == 1
 
-    assert out_sorted.loc[0, "epi_year"] == 2021
-    assert out_sorted.loc[0, "epi_week"] == 52
-    assert out_sorted.loc[0, "cases"] == 2
-
-    assert out_sorted.loc[1, "epi_year"] == 2022
-    assert out_sorted.loc[1, "epi_week"] == 1
-    assert out_sorted.loc[1, "cases"] == 1
+    # Long format remains available
+    long = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["province"], output="long")
+    assert set(long.columns) == {"province", "epi_year", "epi_week", "cases"}
