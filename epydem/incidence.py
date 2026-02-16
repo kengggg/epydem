@@ -9,7 +9,6 @@ import pandas as pd
 
 from .time import epiweek, mmwr_week1_start
 
-
 EpiFreq = Literal["D", "W-MMWR"]
 OutputFormat = Literal["long", "wide"]
 
