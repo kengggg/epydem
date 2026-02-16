@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 from datetime import timedelta
+from dataclasses import dataclass
 from typing import Literal
 
 import pandas as pd
