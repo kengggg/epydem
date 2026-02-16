@@ -25,9 +25,11 @@ pip install -e '.[dev]'
 ```python
 import epydem
 
-# Current API (will change):
-week_number = epydem.calculate("2024-01-01")
-print(week_number)
+year, week = epydem.epiweek("2024-01-01")
+print(year, week)
+
+week_only = epydem.epiweek_number("2024-01-01")
+print(week_only)
 ```
 
 ## Roadmap (high level)
