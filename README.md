@@ -32,6 +32,6 @@ print(week_number)
 
 ## Roadmap (high level)
 
-- CDC/MMWR epiweek (week starts Sunday; week 1 contains Jan 4)
+- CDC/MMWR epiweek (week starts Sunday; week 1 contains Jan 4) ✅ (in progress)
 - Incidence / epicurves from line lists (pandas)
 - Summary statistics (descriptive epi)

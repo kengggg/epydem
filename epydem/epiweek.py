@@ -1,60 +1,85 @@
+from __future__ import annotations
+
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
+from typing import Tuple, Union
+
+DateLike = Union[str, date, datetime]
 
 
-def calculate(date_str):
+_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def parse_ymd(value: DateLike) -> date:
+    """Parse a date-like value into a `datetime.date`.
+
+    Supported inputs:
+    - `datetime.date`
+    - `datetime.datetime` (date portion is used)
+    - `str` in YYYY-MM-DD format
     """
-    Calculate the epidemiological week number for a given date string.
 
-    This function determines the week number of the year for a given date
-    based on epidemiological weeks, where the first epidemiological week
-    starts on a Sunday and includes the first Thursday of the year.
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        if not _DATE_PATTERN.match(value):
+            raise ValueError("Invalid date format. Please use YYYY-MM-DD")
+        return datetime.strptime(value, "%Y-%m-%d").date()
 
-    Args:
-        date_str (str): The date in 'YYYY-MM-DD' format.
+    raise TypeError(f"Unsupported type for date: {type(value)!r}")
+
+
+def mmwr_week1_start(year: int) -> date:
+    """Return the start date (Sunday) of MMWR week 1 for a given calendar year.
+
+    CDC/MMWR definition:
+    - Weeks start on Sunday.
+    - Week 1 is the week that contains January 4.
+
+    Therefore: week 1 starts on the Sunday on or before Jan 4.
+    """
+
+    jan4 = date(year, 1, 4)
+    # Python: Monday=0 .. Sunday=6. We need offset back to Sunday.
+    days_since_sunday = (jan4.weekday() + 1) % 7
+    return jan4 - timedelta(days=days_since_sunday)
+
+
+def mmwr_week(value: DateLike) -> Tuple[int, int]:
+    """Compute CDC/MMWR epidemiological week for a date.
 
     Returns:
-        int: The epidemiological week number (1-53). Returns 0 if the date is
-        before the start of the epidemiological year.
+        (mmwr_year, mmwr_week)
 
-    Raises:
-        ValueError: If the provided date string does not match the 'YYYY-MM-DD' format.
+    Notes:
+    - Weeks start Sunday.
+    - Week 1 is the week containing Jan 4.
+    - Dates in early January can belong to the previous MMWR year.
     """
-    if _verify_date_str(date_str):
-        date = datetime.strptime(date_str, "%Y-%m-%d")
-        year = date.year
 
-        # Find the first Thursday of the year
-        jan_1 = datetime(year, 1, 1)
-        days_to_thursday = (3 - jan_1.weekday()) % 7
-        first_thursday = jan_1 + timedelta(days=days_to_thursday)
+    d = parse_ymd(value)
 
-        # The epidemiological week 1 starts on the Sunday before the first Thursday
-        epi_week_1_start = first_thursday - timedelta(days=3)
+    start_this_year = mmwr_week1_start(d.year)
+    if d < start_this_year:
+        mmwr_year = d.year - 1
+        start = mmwr_week1_start(mmwr_year)
+    else:
+        mmwr_year = d.year
+        start = start_this_year
 
-        # If the date is before the start of the epidemiological year, it's week 0
-        if date < epi_week_1_start:
-            return 0
-        else:
-            return ((date - epi_week_1_start).days // 7) + 1
+    week = ((d - start).days // 7) + 1
+    return mmwr_year, week
 
 
-def _verify_date_str(date_str):
+def calculate(date_str: str) -> int:
+    """Backward-compatible wrapper.
+
+    Historically, `epydem.calculate()` returned a week number only.
+    Going forward, CDC/MMWR weeks are the default. For full fidelity,
+    use `mmwr_week()`.
     """
-    Verify that the date string is in the 'YYYY-MM-DD' format.
 
-    Args:
-        date_str (str): The date string to verify.
-
-    Returns:
-        bool: True if the date string is in the correct format.
-
-    Raises:
-        ValueError: If the date string does not match the 'YYYY-MM-DD' format.
-    """
-    date_pattern = r"^\d{4}-\d{2}-\d{2}$"  # Pattern for YYYY-MM-DD
-
-    if not re.match(date_pattern, date_str):
-        raise ValueError("Invalid date format. Please use YYYY-MM-DD")
-
-    return True
+    _year, week = mmwr_week(date_str)
+    return week
