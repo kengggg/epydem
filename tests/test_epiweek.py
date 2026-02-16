@@ -26,29 +26,29 @@ class TestParseYmd:
             epydem.parse_ymd(20240101)  # type: ignore[arg-type]
 
 
-class TestMmwrWeek:
+class TestEpiweekMmwr:
     def test_week1_contains_jan4(self):
         # MMWR week 1 starts on Sunday on/before Jan 4.
         assert epydem.mmwr_week1_start(2024) == date(2023, 12, 31)
         assert epydem.mmwr_week1_start(2023) == date(2023, 1, 1)
         assert epydem.mmwr_week1_start(2022) == date(2022, 1, 2)
 
-    def test_known_boundaries(self):
+    def test_known_boundaries_tuple_output(self):
         # Early January can belong to previous MMWR year.
-        assert epydem.mmwr_week("2022-01-01") == (2021, 52)
-        assert epydem.mmwr_week("2022-01-02") == (2022, 1)
+        assert epydem.epiweek("2022-01-01") == (2021, 52)
+        assert epydem.epiweek("2022-01-02") == (2022, 1)
 
         # New year transitions.
-        assert epydem.mmwr_week("2023-01-01") == (2023, 1)
-        assert epydem.mmwr_week("2023-12-31") == (2023, 53)
+        assert epydem.epiweek("2023-01-01") == (2023, 1)
+        assert epydem.epiweek("2023-12-31") == (2023, 53)
 
-        assert epydem.mmwr_week("2024-01-01") == (2024, 1)
-        assert epydem.mmwr_week("2024-01-07") == (2024, 2)
-        assert epydem.mmwr_week("2024-12-31") == (2024, 53)
+        assert epydem.epiweek("2024-01-01") == (2024, 1)
+        assert epydem.epiweek("2024-01-07") == (2024, 2)
+        assert epydem.epiweek("2024-12-31") == (2024, 53)
 
-        assert epydem.mmwr_week("2026-01-01") == (2025, 53)
+        assert epydem.epiweek("2026-01-01") == (2025, 53)
 
-    def test_calculate_is_backward_compatible(self):
-        # calculate() returns week number only.
+    def test_week_number_wrapper(self):
+        assert epydem.epiweek_number("2024-01-01") == 1
         assert epydem.calculate("2024-01-01") == 1
         assert epydem.calculate("2022-01-01") == 52
