@@ -56,21 +56,29 @@ def mmwr_week(value: DateLike) -> tuple[int, int]:
     Notes:
     - Weeks start Sunday.
     - Week 1 is the week containing Jan 4.
-    - Dates in early January can belong to the previous MMWR year.
+    - The MMWR year is *not* always the calendar year of the date.
+      Example: 2023-12-31 is the start of 2024 week 1.
+
+    Implementation rule:
+    - Find the unique `mmwr_year` such that:
+        week1_start(mmwr_year) <= d < week1_start(mmwr_year + 1)
     """
 
     d = parse_ymd(value)
-    start_this_year = mmwr_week1_start(d.year)
 
-    if d < start_this_year:
-        mmwr_year = d.year - 1
-        start = mmwr_week1_start(mmwr_year)
-    else:
-        mmwr_year = d.year
-        start = start_this_year
+    year = d.year
+    start = mmwr_week1_start(year)
+    start_next = mmwr_week1_start(year + 1)
+
+    if d < start:
+        year -= 1
+        start = mmwr_week1_start(year)
+    elif d >= start_next:
+        year += 1
+        start = start_next
 
     week = ((d - start).days // 7) + 1
-    return mmwr_year, week
+    return year, week
 
 
 def epiweek(value: DateLike, system: EpiWeekSystem = "mmwr") -> tuple[int, int]:

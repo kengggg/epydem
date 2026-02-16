@@ -40,11 +40,12 @@ class TestEpiweekMmwr:
 
         # New year transitions.
         assert epydem.epiweek("2023-01-01") == (2023, 1)
-        assert epydem.epiweek("2023-12-31") == (2023, 53)
+        # 2023-12-31 is the start of 2024 week 1 under CDC/MMWR.
+        assert epydem.epiweek("2023-12-31") == (2024, 1)
 
         assert epydem.epiweek("2024-01-01") == (2024, 1)
         assert epydem.epiweek("2024-01-07") == (2024, 2)
-        assert epydem.epiweek("2024-12-31") == (2024, 53)
+        assert epydem.epiweek("2024-12-31") == (2025, 1)
 
         assert epydem.epiweek("2026-01-01") == (2025, 53)
 
