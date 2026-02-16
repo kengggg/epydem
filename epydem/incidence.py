@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Literal, Sequence
+from datetime import timedelta
+from typing import Literal
 
 import pandas as pd
 
-from .time import epiweek
+from .time import epiweek, mmwr_week1_start
 
 
 EpiFreq = Literal["D", "W-MMWR"]
@@ -124,9 +126,6 @@ def incidence(
             end_y, end_w = int(long.iloc[-1]["epi_year"]), int(long.iloc[-1]["epi_week"])
 
             # Build the full sequence of (y,w) by stepping Sundays.
-            from .time import mmwr_week1_start
-            from datetime import timedelta
-
             start_date = mmwr_week1_start(start_y) + timedelta(days=(start_w - 1) * 7)
             end_date = mmwr_week1_start(end_y) + timedelta(days=(end_w - 1) * 7)
 
