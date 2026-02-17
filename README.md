@@ -33,7 +33,9 @@ print(week_only)
 
 # Incidence (line list -> counts)
 # df = pandas.DataFrame({"onset_date": [...], "sex": [...]})
-# weekly = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["sex"])
+# weekly = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["sex"], fill_missing=True)
+# weekly_rolling2 = epydem.transform_incidence(weekly, rolling=2)
+# weekly_cum = epydem.transform_incidence(weekly, cumulative=True)
 ```
 
 ## Roadmap (high level)
