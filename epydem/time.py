@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, timedelta
-from typing import Literal, Tuple, Union
+from typing import Literal
 
-DateLike = Union[str, date, datetime]
+DateLike = str | date | datetime
 EpiWeekSystem = Literal["mmwr"]
 
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -47,7 +47,7 @@ def mmwr_week1_start(year: int) -> date:
     return jan4 - timedelta(days=days_since_sunday)
 
 
-def mmwr_week(value: DateLike) -> Tuple[int, int]:
+def mmwr_week(value: DateLike) -> tuple[int, int]:
     """Compute CDC/MMWR epidemiological week for a date.
 
     Returns:
@@ -56,24 +56,32 @@ def mmwr_week(value: DateLike) -> Tuple[int, int]:
     Notes:
     - Weeks start Sunday.
     - Week 1 is the week containing Jan 4.
-    - Dates in early January can belong to the previous MMWR year.
+    - The MMWR year is *not* always the calendar year of the date.
+      Example: 2023-12-31 is the start of 2024 week 1.
+
+    Implementation rule:
+    - Find the unique `mmwr_year` such that:
+        week1_start(mmwr_year) <= d < week1_start(mmwr_year + 1)
     """
 
     d = parse_ymd(value)
-    start_this_year = mmwr_week1_start(d.year)
 
-    if d < start_this_year:
-        mmwr_year = d.year - 1
-        start = mmwr_week1_start(mmwr_year)
-    else:
-        mmwr_year = d.year
-        start = start_this_year
+    year = d.year
+    start = mmwr_week1_start(year)
+    start_next = mmwr_week1_start(year + 1)
+
+    if d < start:
+        year -= 1
+        start = mmwr_week1_start(year)
+    elif d >= start_next:
+        year += 1
+        start = start_next
 
     week = ((d - start).days // 7) + 1
-    return mmwr_year, week
+    return year, week
 
 
-def epiweek(value: DateLike, system: EpiWeekSystem = "mmwr") -> Tuple[int, int]:
+def epiweek(value: DateLike, system: EpiWeekSystem = "mmwr") -> tuple[int, int]:
     """Compute epidemiological week.
 
     Currently supported systems:

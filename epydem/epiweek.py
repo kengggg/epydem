@@ -10,7 +10,7 @@ Prefer using:
 
 from __future__ import annotations
 
-from .time import epiweek, epiweek_number, mmwr_week, mmwr_week1_start, parse_ymd
+from .time import epiweek_number
 
 
 def calculate(date_str: str) -> int:
