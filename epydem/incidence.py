@@ -29,6 +29,9 @@ def incidence(
     count_col: str = "cases",
     output: OutputFormat = "wide",
     fill_missing: bool = True,
+    cumulative: bool = False,
+    rolling: int | None = None,
+    rolling_kind: Literal["sum", "mean"] = "sum",
 ) -> pd.DataFrame:
     """Compute incidence counts from a line list.
 
@@ -44,6 +47,9 @@ def incidence(
           - "wide" (default): pivot table style (DX-friendly)
           - "long": tidy long-form table
         fill_missing: If True, fill missing dates/weeks with 0 counts.
+        cumulative: If True, return cumulative sum over time (per column in wide output).
+        rolling: If set, compute a rolling window over time (per column in wide output).
+        rolling_kind: "sum" or "mean" for the rolling aggregation.
 
     Returns:
         DataFrame in the requested output format.
@@ -104,7 +110,18 @@ def incidence(
         else:
             wide = long.set_index("date")[[count_col]]
 
-        return wide.sort_index()
+        wide = wide.sort_index()
+
+        if rolling is not None:
+            if rolling_kind == "sum":
+                wide = wide.rolling(window=rolling, min_periods=1).sum()
+            else:
+                wide = wide.rolling(window=rolling, min_periods=1).mean()
+
+        if cumulative:
+            wide = wide.cumsum()
+
+        return wide
 
     if freq == "W-MMWR":
         # Compute (epi_year, epi_week) for unique dates, then map back for performance.
@@ -168,6 +185,17 @@ def incidence(
         else:
             wide = long.set_index(["epi_year", "epi_week"])[[count_col]]
 
-        return wide.sort_index()
+        wide = wide.sort_index()
+
+        if rolling is not None:
+            if rolling_kind == "sum":
+                wide = wide.rolling(window=rolling, min_periods=1).sum()
+            else:
+                wide = wide.rolling(window=rolling, min_periods=1).mean()
+
+        if cumulative:
+            wide = wide.cumsum()
+
+        return wide
 
     raise ValueError(f"Unknown freq: {freq}")
