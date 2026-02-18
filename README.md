@@ -23,6 +23,7 @@ pip install -e '.[dev]'
 ## Usage
 
 ```python
+import pandas as pd
 import epydem
 
 year, week = epydem.epiweek("2024-01-01")
@@ -32,10 +33,47 @@ week_only = epydem.epiweek_number("2024-01-01")
 print(week_only)
 
 # Incidence (line list -> counts)
-# df = pandas.DataFrame({"onset_date": [...], "sex": [...]})
-# weekly = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["sex"], fill_missing=True)
-# weekly_rolling2 = epydem.transform_incidence(weekly, rolling=2)
-# weekly_cum = epydem.transform_incidence(weekly, cumulative=True)
+df = pd.DataFrame({"onset_date": ["2024-01-01", "2024-01-02"], "sex": ["M", "F"]})
+weekly = epydem.incidence(df, date_col="onset_date", freq="W-MMWR", by=["sex"], fill_missing=True)
+weekly_rolling2 = epydem.transform_incidence(weekly, rolling=2)
+weekly_cum = epydem.transform_incidence(weekly, cumulative=True)
+```
+
+## Descriptive summary
+
+`summary()` returns a DataFrame (raw stats). `summary_markdown()` returns a pretty Markdown table
+string for quick sharing.
+
+```python
+import pandas as pd
+import epydem
+
+df = pd.DataFrame(
+    {
+        "onset_date": ["2024-01-01", "2024-01-02", None],
+        "age": [10, 20, None],
+        "sex": ["M", "F", "F"],
+    }
+)
+
+# Raw DataFrame summary (long/tidy by default)
+out = epydem.summary(
+    df,
+    by=["sex"],
+    date_cols=["onset_date"],
+    numeric_cols=["age"],
+    categorical_cols=["sex"],
+)
+
+# Pretty report (Markdown table)
+md = epydem.summary_markdown(
+    df,
+    by=["sex"],
+    date_cols=["onset_date"],
+    numeric_cols=["age"],
+    categorical_cols=["sex"],
+)
+print(md)
 ```
 
 ## Roadmap (high level)
