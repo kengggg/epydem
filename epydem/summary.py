@@ -29,7 +29,7 @@ def summary(
     date_cols: Sequence[str] | None = None,
     numeric_cols: Sequence[str] | None = None,
     categorical_cols: Sequence[str] | None = None,
-    top_k: int = 5,
+    top_k: int = 3,
     output: OutputFormat = "long",
 ) -> pd.DataFrame:
     """Descriptive summary statistics for an epidemiological line list.
@@ -61,20 +61,8 @@ def summary(
     numeric_cols = list(numeric_cols) if numeric_cols is not None else []
     categorical_cols = list(categorical_cols) if categorical_cols is not None else []
 
-    # Default heuristic: if user doesn't specify, infer a little.
-    if not date_cols:
-        for c in df.columns:
-            if c.endswith("_date") or c in {"date", "onset_date", "report_date"}:
-                date_cols.append(c)
-
-    if not numeric_cols:
-        numeric_cols = [c for c in df.select_dtypes(include="number").columns]
-
-    # treat remaining non-numeric, non-by, non-date as categorical if user didn't specify
-    if not categorical_cols:
-        candidates = [c for c in df.columns if c not in set(by_cols + date_cols + numeric_cols)]
-        # avoid very wide free-text columns by default
-        categorical_cols = candidates
+    # Conservative: do NOT infer columns automatically.
+    # If no column lists are specified, summary returns only n per group.
 
     work = df.copy()
 
@@ -144,16 +132,24 @@ def summary(
             _add(key, "p75", float(desc["75%"]), col=c)
             _add(key, "max", float(desc["max"]), col=c)
 
-        # Categorical top-k
+        # Categorical top-k (deterministic tie-break: count desc, then str(value) asc)
         for c in categorical_cols:
             if c not in g.columns:
                 continue
-            s = g[c].astype("object")
+            s = g[c].copy()
             vc = s.value_counts(dropna=False)
-            for rank, (val, cnt) in enumerate(vc.head(top_k).items(), start=1):
-                label = "<NA>" if pd.isna(val) else str(val)
-                _add(key, f"top_{rank}", label, col=c)
-                _add(key, f"top_{rank}_n", int(cnt), col=c)
+            # Build sortable frame: count desc, then label asc for ties
+            vc_df = vc.reset_index()
+            vc_df.columns = ["raw_value", "cnt"]
+            vc_df["label"] = vc_df["raw_value"].apply(
+                lambda v: "<NA>" if pd.isna(v) else str(v)
+            )
+            vc_df = vc_df.sort_values(
+                ["cnt", "label"], ascending=[False, True]
+            ).reset_index(drop=True)
+            for rank, row in enumerate(vc_df.head(top_k).itertuples(), start=1):
+                _add(key, f"top_{rank}", row.label, col=c)
+                _add(key, f"top_{rank}_n", int(row.cnt), col=c)
 
     out = pd.DataFrame(rows)
 
