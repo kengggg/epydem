@@ -38,8 +38,45 @@ print(week_only)
 # weekly_cum = epydem.transform_incidence(weekly, cumulative=True)
 ```
 
+### `summary()` — Descriptive statistics
+
+```python
+import pandas as pd
+import epydem
+
+df = pd.DataFrame({
+    "region": ["N", "N", "S", "S", "S"],
+    "onset": ["2024-01-01", "2024-02-15", "2024-03-10", "NOT_A_DATE", None],
+    "age": [25, 40, 33, 55, 19],
+    "dx": ["flu", "flu", "covid", "covid", "flu"],
+})
+
+# Default: returns only row count
+epydem.summary(df)
+
+# With column specs (long format, the default)
+result = epydem.summary(
+    df,
+    by="region",
+    date_cols=["onset"],
+    numeric_cols=["age"],
+    categorical_cols=["dx"],
+)
+print(result)
+#   region  column       metric          value
+# 0      N      _n            n              2
+# 1      N   onset    missing_n              0
+# 2      N   onset  missing_pct            0.0
+# 3      N   onset          min  2024-01-01 ...
+# ...
+
+# Wide format
+wide = epydem.summary(df, numeric_cols=["age"], output="wide")
+print(wide)
+```
+
 ## Roadmap (high level)
 
 - CDC/MMWR epiweek (week starts Sunday; week 1 contains Jan 4) ✅ (in progress)
 - Incidence / epicurves from line lists (pandas) ✅ (in progress)
-- Summary statistics (descriptive epi)
+- Summary statistics (descriptive epi) ✅

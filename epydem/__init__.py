@@ -2,6 +2,7 @@
 
 from .epiweek import calculate
 from .incidence import incidence
+from .summary import summary
 from .time import epiweek, epiweek_number, mmwr_week, mmwr_week1_start, parse_ymd
 from .transform import transform_incidence
 
@@ -14,4 +15,5 @@ __all__ = [
     "parse_ymd",
     "incidence",
     "transform_incidence",
+    "summary",
 ]
