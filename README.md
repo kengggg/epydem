@@ -41,8 +41,10 @@ weekly_cum = epydem.transform_incidence(weekly, cumulative=True)
 
 ## Descriptive summary
 
-`summary()` returns a DataFrame (raw stats). `summary_markdown()` returns a pretty Markdown table
-string for quick sharing.
+`summary()` returns a tidy (long-format) DataFrame of descriptive statistics.
+`summary_markdown()` wraps it into a pretty Markdown table for quick sharing.
+
+**Conservative defaults** — if you omit all column lists, `summary()` returns only `n` per group (no auto-inference):
 
 ```python
 import pandas as pd
@@ -56,16 +58,27 @@ df = pd.DataFrame(
     }
 )
 
-# Raw DataFrame summary (long/tidy by default)
+# Only n per group (no columns specified)
+epydem.summary(df, by=["sex"])
+
+# Full summary: explicitly specify columns you care about
 out = epydem.summary(
     df,
     by=["sex"],
     date_cols=["onset_date"],
     numeric_cols=["age"],
     categorical_cols=["sex"],
+    top_k=3,  # default; top-k categories per categorical column
 )
 
-# Pretty report (Markdown table)
+# Wide output (metrics as columns)
+wide = epydem.summary(
+    df,
+    numeric_cols=["age"],
+    output="wide",
+)
+
+# Pretty Markdown report
 md = epydem.summary_markdown(
     df,
     by=["sex"],
